@@ -5,10 +5,16 @@ import {
   getAllTours,
   getOneTour,
   updateTour,
+  aliasTopTours,
+  getToursState,
 } from "../controllers/tourController.js";
 import formatQuery from "../milddleware/formatQuery.js";
 
 const router = express.Router();
+
+router.route("/top-tours").get(aliasTopTours, formatQuery, getAllTours);
+
+router.route("/stats").get(getToursState);
 
 router.route("/").get(formatQuery, getAllTours).post(createTour);
 
