@@ -124,4 +124,4 @@ export const getToursState = async (req, res) => {
   }
 };
 
-// bir yıl içerisindeki aylık planı raporla
+// todo : bir yıl içerisindeki aylık planı raporla
