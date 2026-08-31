@@ -14,6 +14,9 @@ const tourSchema = new mongoose.Schema(
       ],
     },
     price: { type: Number, required: true, min: [0, "Fiyat pozitif olmalı."] },
+    priceDiscount: {
+      type: Number,
+    },
     maxGroupSize: {
       type: Number,
       required: true,
@@ -36,8 +39,18 @@ const tourSchema = new mongoose.Schema(
     images: { type: [String], required: true },
     startDates: { type: [Date], required: true },
   },
-  { timestamps: true, versionKey: false },
+  {
+    timestamps: true,
+    versionKey: false,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  },
 );
+
+//! virtual Property (sanal özellik)
+tourSchema.virtual("discountPrice").get(function () {
+  return this.price - this.priceDiscount;
+});
 
 // yukardaki şemayı kullanarak mongoose model oluştur
 const Tour = mongoose.model("Tour", tourSchema);

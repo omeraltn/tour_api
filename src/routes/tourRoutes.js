@@ -7,10 +7,13 @@ import {
   updateTour,
   aliasTopTours,
   getToursState,
+  getMonthlyPlan,
 } from "../controllers/tourController.js";
 import formatQuery from "../milddleware/formatQuery.js";
 
 const router = express.Router();
+
+router.route("/monthly-plan/:year").get(getMonthlyPlan);
 
 router.route("/top-tours").get(aliasTopTours, formatQuery, getAllTours);
 

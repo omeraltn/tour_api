@@ -57,6 +57,7 @@ export const updateTour = async (req, res) => {
   // veritabanındaki tur belgesini güncelle
   const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
+    runValidators: true,
   });
 
   // tur bulunamadıysa hata fırlat
@@ -124,4 +125,55 @@ export const getToursState = async (req, res) => {
   }
 };
 
-// todo : bir yıl içerisindeki aylık planı raporla
+// bir yıl içerisinde aylık planı raporla
+export const getMonthlyPlan = async (req, res) => {
+  // parametre olarak gelen yıla eriş
+  const year = req.params.year;
+
+  // istatistik hesaplama
+  const stats = await Tour.aggregate([
+    {
+      $unwind: {
+        path: "$startDates",
+      },
+    },
+    {
+      $match: {
+        startDates: {
+          $gte: new Date(`${year}-01-01`),
+          $lte: new Date(`${year}-12-31`),
+        },
+      },
+    },
+    {
+      $group: {
+        _id: {
+          $month: "$startDates",
+        },
+        count: {
+          $sum: 1,
+        },
+        tours: {
+          $push: "$name",
+        },
+      },
+    },
+    {
+      $addFields: {
+        month: "$_id",
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+      },
+    },
+    {
+      $sort: {
+        month: 1,
+      },
+    },
+  ]);
+
+  return res.json({ message: "Yıllık plan", stats });
+};
