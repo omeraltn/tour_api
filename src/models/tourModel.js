@@ -38,6 +38,7 @@ const tourSchema = new mongoose.Schema(
     imageCover: { type: String, required: true },
     images: { type: [String], required: true },
     startDates: { type: [Date], required: true },
+    premium: { type: Boolean },
   },
   {
     timestamps: true,
@@ -50,6 +51,25 @@ const tourSchema = new mongoose.Schema(
 //! virtual Property (sanal özellik)
 tourSchema.virtual("discountPrice").get(function () {
   return this.price - this.priceDiscount;
+});
+
+//! virtual property sanal özellik
+tourSchema.virtual("slug").get(function () {
+  return this.name.replaceAll(" ", "-").toLowerCase();
+});
+
+//!  middleware
+// bir belgenin kaydedilme, güncelleme, silinmei okuma gibi olaylarından önce veya sonra gerkleştirilmesi
+//  gereken   işlemleri belirlemek için kullanılır.
+// Örn: Client'tan gelen tur versiyonun veritabanına kaydedikten sonra  mail göndermek için kullanılabilir.
+
+tourSchema.post("save", function (doc) {
+  console.log(doc._id + "'li tur sisteme kayıt edildi. mail gönderiliyor");
+});
+
+// örn: herhangi bir find sorgusunda premium turların dahil edilmesini engellemek amacıyla kullanılabilir
+tourSchema.pre("find", function () {
+  this.find({ premium: { $ne: true } });
 });
 
 // yukardaki şemayı kullanarak mongoose model oluştur

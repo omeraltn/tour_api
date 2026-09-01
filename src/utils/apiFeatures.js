@@ -27,7 +27,7 @@ class APIFetature {
   pagination() {
     // eğer sayfa parametresi varsa
     const page = Number(this.queryParams.page) || 1;
-    const limit = Number(this.queryParams.limit) || 5;
+    const limit = Number(this.queryParams.limit) || 10;
 
     this.toursQuery.limit(limit).skip((page - 1) * limit);
     return this;

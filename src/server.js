@@ -2,6 +2,7 @@ import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import tourRoutes from "./routes/tourRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
 
 //env değişkenlerine erişmemizi sağlayacak fonksiyon
 dotenv.config();
@@ -20,6 +21,7 @@ mongoose
 
 // route'ları projeye tanıt
 app.use("/api/tours", tourRoutes);
+app.use("/api/auth", authRoutes);
 
 // api'nin dinleyeceği portu belirle
 const PORT = process.env.PORT;
