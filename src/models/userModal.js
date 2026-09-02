@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import validator from "validator";
+import bcrypt from "bcrypt";
 
 const userSchema = mongoose.Schema(
   {
@@ -43,6 +44,17 @@ const userSchema = mongoose.Schema(
   },
   { versionKey: false, timestamps: true },
 );
+
+//? paswword belge kaydedilmeden önce:
+//* password alanına haslenme ve saltlanma
+
+userSchema.pre("save", async function () {
+  // kaydedilen kullanıcının parolası değişmediyse fonksiyonunu durdur
+  if (!this.isModified("password")) return;
+
+  // şifreyi hashle ve saltla
+  this.password = await bcrypt.hash(this.password, 10);
+});
 
 const User = mongoose.model("User", userSchema);
 export default User;
