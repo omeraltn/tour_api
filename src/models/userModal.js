@@ -42,7 +42,17 @@ const userSchema = mongoose.Schema(
       ],
     },
   },
-  { versionKey: false, timestamps: true },
+  {
+    versionKey: false,
+    timestamps: true,
+    // clienta veriyi göndermeden hemen önce
+    toJSON: {
+      transform: function (doc, ret) {
+        // şifre alanını kaldır
+        delete ret?.password;
+      },
+    },
+  },
 );
 
 //? paswword belge kaydedilmeden önce:
