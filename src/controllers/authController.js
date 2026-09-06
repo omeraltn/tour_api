@@ -1,5 +1,9 @@
 import User from "../models/userModal.js";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 export const register = async (req, res) => {
   try {
@@ -40,6 +44,17 @@ export const login = async (req, res) => {
     if (!isValid)
       return res.status(401).json({ message: "Email veya şifre hatalı" });
 
+    //5) jwt token oluştur
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "30d",
+    });
+
+    res.cookie("jwt", token, {
+      expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      httpOnly: true, // sadece http protokolone sahip domainlerde seyahat eder
+      secure: false, // sadece https
+    });
+
     res.json({ message: "Giriş yapıldı.", user });
   } catch (error) {
     res.status(500).json({ message: "İşlem başarısız", error: error.message });
@@ -48,7 +63,7 @@ export const login = async (req, res) => {
 
 export const logout = async (req, res) => {
   try {
-    res.json({ message: "İşlem başarılı." });
+    res.clearCookie("jwt").json({ message: "Çıkış yapıldı." });
   } catch (error) {
     res.status(500).json({ message: "İşlem başarısız.", error: error.message });
   }
