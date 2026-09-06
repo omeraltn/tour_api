@@ -10,17 +10,27 @@ import {
   getMonthlyPlan,
 } from "../controllers/tourController.js";
 import formatQuery from "../milddleware/formatQuery.js";
+import { protect, authorizeRoles } from "../milddleware/protect.js";
 
 const router = express.Router();
 
-router.route("/monthly-plan/:year").get(getMonthlyPlan);
+router
+  .route("/monthly-plan/:year")
+  .get(protect, authorizeRoles(["admin"]), getMonthlyPlan);
 
 router.route("/top-tours").get(aliasTopTours, formatQuery, getAllTours);
 
-router.route("/stats").get(getToursState);
+router.route("/stats").get(protect, authorizeRoles(["admin"]), getToursState);
 
-router.route("/").get(formatQuery, getAllTours).post(createTour);
+router
+  .route("/")
+  .get(formatQuery, getAllTours)
+  .post(protect, authorizeRoles(["admin", "lead-guide"]), createTour);
 
-router.route("/:id").get(getOneTour).patch(updateTour).delete(deleteTour);
+router
+  .route("/:id")
+  .get(getOneTour)
+  .patch(protect, authorizeRoles(["admin", "lead-guide", "guide"]), updateTour)
+  .delete(protect, authorizeRoles(["admin", "lead-guide"]), deleteTour);
 
 export default router;

@@ -5,6 +5,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import tourRoutes from "./routes/tourRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
+import cookieParser from "cookie-parser";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -17,6 +18,7 @@ const app = express();
 
 // midlleware - req ile gelen body ile gelen veriye erişim sağlanır
 app.use(express.json());
+app.use(cookieParser());
 
 // route'ları projeye tanıt
 app.use("/api/tours", tourRoutes);
