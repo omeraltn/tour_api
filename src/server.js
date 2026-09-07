@@ -6,6 +6,7 @@ import { fileURLToPath } from "url";
 import tourRoutes from "./routes/tourRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import cookieParser from "cookie-parser";
+import { Not_Found } from "./utils/error.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -23,6 +24,19 @@ app.use(cookieParser());
 // route'ları projeye tanıt
 app.use("/api/tours", tourRoutes);
 app.use("/api/auth", authRoutes);
+
+// tanımlamayan route
+app.use((req, res, next) => {
+  next(new Not_Found());
+});
+
+// global hata yönetimi
+app.use((err, req, res, next) => {
+  res.status(err.statusCode || 500).json({
+    message: "Global hata yönetimi tarafından yakalandı.",
+    error: err.message,
+  });
+});
 
 // api'nin dinleyeceği portu belirle
 const PORT = process.env.PORT || 3000;

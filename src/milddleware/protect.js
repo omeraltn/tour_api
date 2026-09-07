@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import User from "../models/userModal.js";
 import dotenv from "dotenv";
+import { Not_Found, Unauthorized, Forbidden } from "../utils/error.js";
 
 dotenv.config();
 
@@ -14,10 +15,7 @@ export const protect = async (req, res, next) => {
   const token = req?.cookies.jwt;
 
   // 2-) token gelmediyse hata fırlat
-  if (!token)
-    return res
-      .status(401)
-      .json({ message: "Bu işlem için yetkiniz yok. token bulunamadı." });
+  if (!token) next(new Unauthorized());
 
   // 3) tokenın geçerliliğini doğrula (zaman aşımına uğradımı ? | imza doğru mu ?)
   let decoded;
@@ -25,6 +23,7 @@ export const protect = async (req, res, next) => {
     decoded = jwt.verify(token, process.env.JWT_SECRET);
   } catch (error) {
     res.status(401).json({ message: "Kimlik doğrulanmadı. Token geçersiz." });
+    next(new Unauthorized("Token geçersiz"));
   }
 
   // 4) token ile gelen kulanıcı hesabı duruyor mu
@@ -32,16 +31,15 @@ export const protect = async (req, res, next) => {
   try {
     activeUser = await User.findById(decoded.id);
   } catch (error) {
-    res.status(401).json({ message: "Kullanıcı hesabı silinmiş." });
+    next(new Unauthorized("Kullanıcı hesabı bulunamadı."));
   }
 
   // 4.1 hesap silindiyse hata fırlat
-  if (!activeUser)
-    return res.status(401).json({ message: "Kullanıcı hesabı silinmiş." });
+  if (!activeUser) next(new Unauthorized("Kullanıcı hesabı bulunamadı."));
 
   // 4.2) hesap dondurulduysa hata fırlat
   if (!activeUser.active)
-    return res.status(401).json({ message: "Kullanıcı hesabı dondurulmuş." });
+    next(new Unauthorized("Kullanıcı hesabı bulunamadı."));
 
   //5) protextten sonra çalışacak fonksiyonlarda kullanıcı verisine erişebilmek için req nesnesine user'ı ekle
   req.user = activeUser;
@@ -58,5 +56,15 @@ export const protect = async (req, res, next) => {
 export const authorizeRoles =
   (...allowedRoles) =>
   (req, res, next) => {
+    // kullanıcının rolü izin verilen roller arasında var mı ?
+    const hasPermission = allowedRoles.includes(req.user.role);
+
+    // kullanıcının rolü yeterli değilse hata fırlat
+    if (!hasPermission)
+      return res
+        .status(403)
+        .json({ message: "Bu işlemi yapmaya yetkiniz yok. " });
+
+    // rolü yeterliyse devam et
     next();
   };

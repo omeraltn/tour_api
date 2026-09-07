@@ -16,21 +16,21 @@ const router = express.Router();
 
 router
   .route("/monthly-plan/:year")
-  .get(protect, authorizeRoles(["admin"]), getMonthlyPlan);
+  .get(protect, authorizeRoles("admin"), getMonthlyPlan);
 
 router.route("/top-tours").get(aliasTopTours, formatQuery, getAllTours);
 
-router.route("/stats").get(protect, authorizeRoles(["admin"]), getToursState);
+router.route("/stats").get(protect, authorizeRoles("admin"), getToursState);
 
 router
   .route("/")
   .get(formatQuery, getAllTours)
-  .post(protect, authorizeRoles(["admin", "lead-guide"]), createTour);
+  .post(protect, authorizeRoles("admin", "lead-guide"), createTour);
 
 router
   .route("/:id")
   .get(getOneTour)
-  .patch(protect, authorizeRoles(["admin", "lead-guide", "guide"]), updateTour)
-  .delete(protect, authorizeRoles(["admin", "lead-guide"]), deleteTour);
+  .patch(protect, authorizeRoles("admin", "lead-guide", "guide"), updateTour)
+  .delete(protect, authorizeRoles("admin", "lead-guide"), deleteTour);
 
 export default router;
