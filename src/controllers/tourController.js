@@ -1,6 +1,7 @@
 import Tour from "../models/tourModel.js";
 import qs from "qs";
 import APIFetature from "../utils/apiFeatures.js";
+import { Not_Found, BadRequest } from "../utils/error.js";
 
 export const getAllTours = async (req, res) => {
   // sorguyu oluştur
@@ -30,7 +31,7 @@ export const getOneTour = async (req, res) => {
   const tour = await Tour.findById(id);
 
   //tur bulunamadıysa
-  if (!tour) return res.status(404).json({ message: "Tur bulunamadı." });
+  if (!tour) throw new Not_Found("Tur bulunamadı.");
 
   // client'a yanıt gönder
   res.status(200).json({
@@ -61,7 +62,7 @@ export const updateTour = async (req, res) => {
   });
 
   // tur bulunamadıysa hata fırlat
-  if (!tour) return res.status(404).json({ message: "Tur bulunamadı." });
+  if (!tour) throw new Not_Found("Tur bulunamadı.");
 
   // client'a yanıt gönder
   res.status(200).json({
@@ -75,7 +76,7 @@ export const deleteTour = async (req, res) => {
   const tour = await Tour.findByIdAndDelete(res.req.params.id);
 
   // tur bulunamadıysa
-  if (!tour) return res.status(404).json({ message: "Tur bulunamadı." });
+  if (!tour) throw new Not_Found("Tur bulunamadı.");
 
   // client'a yanıt gönder
   res.status(200).json({
@@ -121,59 +122,63 @@ export const getToursState = async (req, res) => {
     ]);
     res.json({ message: "Rapor oluşturuldu", stats });
   } catch (error) {
-    res.status(500).json({ message: "Bir sorun oluştu. " });
+    throw new BadRequest("Tur bulunamadı.");
   }
 };
 
 // bir yıl içerisinde aylık planı raporla
 export const getMonthlyPlan = async (req, res) => {
-  // parametre olarak gelen yıla eriş
-  const year = req.params.year;
+  try {
+    // parametre olarak gelen yıla eriş
+    const year = req.params.year;
 
-  // istatistik hesaplama
-  const stats = await Tour.aggregate([
-    {
-      $unwind: {
-        path: "$startDates",
-      },
-    },
-    {
-      $match: {
-        startDates: {
-          $gte: new Date(`${year}-01-01`),
-          $lte: new Date(`${year}-12-31`),
+    // istatistik hesaplama
+    const stats = await Tour.aggregate([
+      {
+        $unwind: {
+          path: "$startDates",
         },
       },
-    },
-    {
-      $group: {
-        _id: {
-          $month: "$startDates",
-        },
-        count: {
-          $sum: 1,
-        },
-        tours: {
-          $push: "$name",
+      {
+        $match: {
+          startDates: {
+            $gte: new Date(`${year}-01-01`),
+            $lte: new Date(`${year}-12-31`),
+          },
         },
       },
-    },
-    {
-      $addFields: {
-        month: "$_id",
+      {
+        $group: {
+          _id: {
+            $month: "$startDates",
+          },
+          count: {
+            $sum: 1,
+          },
+          tours: {
+            $push: "$name",
+          },
+        },
       },
-    },
-    {
-      $project: {
-        _id: 0,
+      {
+        $addFields: {
+          month: "$_id",
+        },
       },
-    },
-    {
-      $sort: {
-        month: 1,
+      {
+        $project: {
+          _id: 0,
+        },
       },
-    },
-  ]);
+      {
+        $sort: {
+          month: 1,
+        },
+      },
+    ]);
 
-  return res.json({ message: "Yıllık plan", stats });
+    return res.json({ message: "Yıllık plan", stats });
+  } catch (error) {
+    throw new BadRequest("Tur bulunamadı.");
+  }
 };

@@ -15,7 +15,7 @@ export const protect = async (req, res, next) => {
   const token = req?.cookies.jwt;
 
   // 2-) token gelmediyse hata fırlat
-  if (!token) next(new Unauthorized());
+  if (!token) return next(new Unauthorized());
 
   // 3) tokenın geçerliliğini doğrula (zaman aşımına uğradımı ? | imza doğru mu ?)
   let decoded;
@@ -35,11 +35,12 @@ export const protect = async (req, res, next) => {
   }
 
   // 4.1 hesap silindiyse hata fırlat
-  if (!activeUser) next(new Unauthorized("Kullanıcı hesabı bulunamadı."));
+  if (!activeUser)
+    return next(new Unauthorized("Kullanıcı hesabı bulunamadı."));
 
   // 4.2) hesap dondurulduysa hata fırlat
   if (!activeUser.active)
-    next(new Unauthorized("Kullanıcı hesabı bulunamadı."));
+    return next(new Unauthorized("Kullanıcı hesabı bulunamadı."));
 
   //5) protextten sonra çalışacak fonksiyonlarda kullanıcı verisine erişebilmek için req nesnesine user'ı ekle
   req.user = activeUser;

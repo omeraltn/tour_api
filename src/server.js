@@ -7,6 +7,7 @@ import tourRoutes from "./routes/tourRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import cookieParser from "cookie-parser";
 import { Not_Found } from "./utils/error.js";
+import errorHandler from "./milddleware/errorHandler.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -31,12 +32,7 @@ app.use((req, res, next) => {
 });
 
 // global hata yönetimi
-app.use((err, req, res, next) => {
-  res.status(err.statusCode || 500).json({
-    message: "Global hata yönetimi tarafından yakalandı.",
-    error: err.message,
-  });
-});
+app.use(errorHandler);
 
 // api'nin dinleyeceği portu belirle
 const PORT = process.env.PORT || 3000;
