@@ -41,8 +41,20 @@ export const protect = async (req, res, next) => {
   // 4.2) hesap dondurulduysa hata fırlat
   if (!activeUser.active)
     return next(new Unauthorized("Kullanıcı hesabı bulunamadı."));
+  //5) kullanıcıya tokenı verdikten sonra şifrrsini değiştirdi mi ?
+  if (activeUser?.passwordChangedAt) {
+    const passwordChangedSeconds =
+      activeUser.passwordChangedAt.getTime() / 1000;
+    const tokenCreatedSeconds = decoded.iat;
 
-  //5) protextten sonra çalışacak fonksiyonlarda kullanıcı verisine erişebilmek için req nesnesine user'ı ekle
+    if (passwordChangedSeconds > tokenCreatedSeconds) {
+      throw new Forbidden(
+        "Yakın zamanda şifrenizi değiştirdiniiz. Lütfen tekrar giriş yapın.",
+      );
+    }
+  }
+
+  //6) protextten sonra çalışacak fonksiyonlarda kullanıcı verisine erişebilmek için req nesnesine user'ı ekle
   req.user = activeUser;
 
   // sonraki adıma geç
