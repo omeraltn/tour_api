@@ -56,6 +56,9 @@ const userSchema = mongoose.Schema(
       transform: function (doc, ret) {
         // şifre alanını kaldır
         delete ret?.password;
+        delete ret?.passwordResetToken;
+        delete ret?.passwordResetExpires;
+        delete ret?.passwordChangedAt;
       },
     },
   },

@@ -5,6 +5,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import tourRoutes from "./routes/tourRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
 import cookieParser from "cookie-parser";
 import { Not_Found } from "./utils/error.js";
 import errorHandler from "./milddleware/errorHandler.js";
@@ -25,6 +26,7 @@ app.use(cookieParser());
 // route'ları projeye tanıt
 app.use("/api/tours", tourRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
 
 // tanımlamayan route
 app.use((req, res, next) => {
