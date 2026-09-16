@@ -9,6 +9,8 @@ import userRoutes from "./routes/userRoutes.js";
 import cookieParser from "cookie-parser";
 import { Not_Found } from "./utils/error.js";
 import errorHandler from "./milddleware/errorHandler.js";
+import rateLimit from "express-rate-limit";
+import helmet from "helmet";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -19,8 +21,25 @@ dotenv.config({ path: path.resolve(__dirname, "../.env") });
 // express uygulaması oluştur
 const app = express();
 
+// rate limit
+const loginRateLimit = rateLimit({
+  windowmS: 5 * 60 * 1000,
+  max: 5,
+  message:
+    "Kısa süre içinde çok fazla deneme yaptınız. Lütfen daha sonra tekrar deneyiniz.",
+});
+const generalRateLimit = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 50,
+  message:
+    "Kısa süre içinde çok fazla deneme yaptınız. Lütfen daha sonra tekrar deneyiniz.",
+});
+
 // midlleware - req ile gelen body ile gelen veriye erişim sağlanır
-app.use(express.json());
+app.use(helmet());
+app.use(generalRateLimit);
+app.use("/api/auth/", loginRateLimit);
+app.use(express.json({ limit: "100kb" }));
 app.use(cookieParser());
 
 // route'ları projeye tanıt
