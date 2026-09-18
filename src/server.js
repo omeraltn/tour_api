@@ -11,6 +11,7 @@ import { Not_Found } from "./utils/error.js";
 import errorHandler from "./milddleware/errorHandler.js";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
+import reviewRoutes from "./routes/reviewRoutes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -23,7 +24,7 @@ const app = express();
 
 // rate limit
 const loginRateLimit = rateLimit({
-  windowmS: 5 * 60 * 1000,
+  windowMs: 5 * 60 * 1000,
   max: 5,
   message:
     "Kısa süre içinde çok fazla deneme yaptınız. Lütfen daha sonra tekrar deneyiniz.",
@@ -46,6 +47,7 @@ app.use(cookieParser());
 app.use("/api/tours", tourRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/reviews", reviewRoutes);
 
 // tanımlamayan route
 app.use((req, res, next) => {

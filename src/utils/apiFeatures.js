@@ -1,26 +1,26 @@
 // sıralama, filtreleme, alan limitleme, sayfalama gibi özelliklere projede defalarca ihtiyaç duyduğumuzdan dolayı her gerektiğinde bu özellikleri ve en baştan yazmamak için yeniden kullanılabilir bir sınıf içerisinde tanımlayalım
 
 class APIFetature {
-  constructor(toursQuery, queryParams, parsedQuery) {
-    this.toursQuery = toursQuery; // veritabanı sorgusu
+  constructor(query, queryParams, parsedQuery) {
+    this.query = query; // veritabanı sorgusu
     this.queryParams = queryParams; // arama parametreleri
     this.parsedQuery = parsedQuery; // işlenmiş arama parametreleri
   }
 
   filter() {
-    this.toursQuery = this.toursQuery.find(this.parsedQuery);
+    this.query = this.query.find(this.parsedQuery);
     return this;
   }
   sort() {
     if (this.queryParams.sort) {
-      this.toursQuery.sort(this.queryParams.sort.replaceAll(",", " "));
+      this.query.sort(this.queryParams.sort.replaceAll(",", " "));
     }
     return this;
   }
 
   select() {
     if (this.queryParams.fields) {
-      this.toursQuery.select(this.queryParams.fields.replaceAll(",", " "));
+      this.query.select(this.queryParams.fields.replaceAll(",", " "));
     }
     return this;
   }
@@ -29,7 +29,7 @@ class APIFetature {
     const page = Number(this.queryParams.page) || 1;
     const limit = Number(this.queryParams.limit) || 10;
 
-    this.toursQuery.limit(limit).skip((page - 1) * limit);
+    this.query.limit(limit).skip((page - 1) * limit);
     return this;
   }
 }

@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import validator from "validator";
+import { required } from "zod/mini";
 
 //schema: veritabanına kaybedilecek tur verisinin şartlarını tanımlamamızı sağlar
 
@@ -39,6 +40,25 @@ const tourSchema = new mongoose.Schema(
     images: { type: [String], required: true },
     startDates: { type: [Date], required: true },
     premium: { type: Boolean },
+    duration: { type: Number, required: true },
+    // enbedding
+    startLocation: {
+      description: String,
+      type: { type: String, default: "Point", enum: ["Point"] },
+      coordinates: [Number],
+      address: String,
+    },
+    // embedding
+    locations: [
+      {
+        description: String,
+        type: { type: String, default: "Point", enum: ["Point"] },
+        coordinates: [Number],
+        day: Number,
+      },
+    ],
+    // refferance(parent)
+    guides: [{ type: mongoose.Schema.ObjectId, ref: "User" }],
   },
   {
     timestamps: true,
