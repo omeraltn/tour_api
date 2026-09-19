@@ -40,3 +40,6 @@ export class Not_Found extends BaseError {
     super(message, 404, "NOT_FOUND");
   }
 }
+
+// Alias for consistency: allow importing `NotFound`
+export { Not_Found as NotFound };

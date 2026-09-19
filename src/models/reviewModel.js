@@ -29,4 +29,9 @@ const reviewSchema = mongoose.Schema(
   },
 );
 
+// yapılan sorgulardan önce kullanıcı bilgilerini dolduracak middleware
+reviewSchema.pre(/^find/, function () {
+  this.populate("user", "name photo");
+});
+
 export default mongoose.model("Review", reviewSchema);
