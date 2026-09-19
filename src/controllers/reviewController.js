@@ -1,7 +1,7 @@
 import APIFetature from "../utils/apiFeatures.js";
 import catchAsync from "../utils/catchAsync.js";
 import Review from "../models/reviewModel.js";
-import { NotFound } from "./../utils/error.js";
+import { NotFound, Not_Found } from "./../utils/error.js";
 
 export const getAllReviews = catchAsync(async (req, res) => {
   const reviewFeatures = new APIFetature(
@@ -50,9 +50,32 @@ export const createReview = catchAsync(async (req, res) => {
 });
 
 export const updateReview = catchAsync(async (req, res) => {
-  res.json("İstek başarılı");
+  const id = req.params.id; // hangi yorum
+  const rating = req.body.rating; // 1-5
+  const review = req.body.review; // yorum içeriği
+  const user = req.user._id; // yorumu atan
+
+  const found = await Review.findOneAndUpdate(
+    { _id: id, user },
+    {
+      rating,
+      review,
+    },
+    { new: true },
+  );
+
+  if (!found) throw new Not_Found("Yorum Bulunamadı.");
+
+  res.json({ message: "Yorum güncellendi." });
 });
 
 export const deleteReview = catchAsync(async (req, res) => {
-  res.json("İstek başarılı");
+  const review = await Review.findOneAndDelete({
+    _id: req.params.id,
+    user: req.user.id,
+  });
+
+  if (!review) throw new NotFound("Yorum bulunamadı.");
+
+  res.json({ message: "Yorum kaldırıldı." });
 });
