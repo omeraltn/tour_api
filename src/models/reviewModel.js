@@ -1,10 +1,11 @@
-import mongoose, { version } from "mongoose";
+import mongoose from "mongoose";
+import Tour from "./tourModel.js";
 
-const reviewSchema = mongoose.Schema(
+const reviewSchema = new mongoose.Schema(
   {
     review: {
       type: String,
-      required: [true, "Yorum içeriği bol olamaz"],
+      required: [true, "Yorum içeriği boş olamaz"],
     },
     rating: {
       type: Number,
@@ -29,9 +30,50 @@ const reviewSchema = mongoose.Schema(
   },
 );
 
-// yapılan sorgulardan önce kullanıcı bilgilerini dolduracak middleware
 reviewSchema.pre(/^find/, function () {
   this.populate("user", "name photo");
 });
 
-export default mongoose.model("Review", reviewSchema);
+reviewSchema.statics.calcRating = async function (tourId) {
+  const result = await this.aggregate([
+    {
+      $match: { tour: tourId },
+    },
+    {
+      $group: {
+        _id: "$tour",
+        ratingQuantity: { $sum: 1 },
+        ratingAverage: { $avg: "$rating" },
+      },
+    },
+  ]);
+
+  if (result.length > 0) {
+    await Tour.findByIdAndUpdate(tourId, {
+      ratingsAverage: Number(result[0].ratingAverage.toFixed(2)),
+      ratingsQuantity: result[0].ratingQuantity,
+    });
+  } else {
+    await Tour.findByIdAndUpdate(tourId, {
+      ratingsAverage: 0,
+      ratingsQuantity: 0,
+    });
+  }
+};
+
+reviewSchema.post("save", function () {
+  this.constructor.calcRating(this.tour);
+});
+
+reviewSchema.post(/^findOneAnd/, async function (doc) {
+  if (!doc) return;
+
+  const tourId = doc.tour?._id || doc.tour;
+  if (tourId) {
+    await this.model.calcRating(tourId);
+  }
+});
+
+const Review = mongoose.model("Review", reviewSchema);
+
+export default Review;
