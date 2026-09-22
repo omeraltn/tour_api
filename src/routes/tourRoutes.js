@@ -8,6 +8,8 @@ import {
   aliasTopTours,
   getToursState,
   getMonthlyPlan,
+  getToursWithin,
+  getDistance,
 } from "../controllers/tourController.js";
 import formatQuery from "../milddleware/formatQuery.js";
 import { protect, authorizeRoles } from "../milddleware/protect.js";
@@ -32,5 +34,11 @@ router
   .get(getOneTour)
   .patch(protect, authorizeRoles("admin", "lead-guide", "guide"), updateTour)
   .delete(protect, authorizeRoles("admin", "lead-guide"), deleteTour);
+
+router
+  .route("/tours-within/:distance/center/:latlng/unit/:unit")
+  .get(getToursWithin);
+
+router.route("/distances/:latlng/unit/:unit").get(getDistance);
 
 export default router;

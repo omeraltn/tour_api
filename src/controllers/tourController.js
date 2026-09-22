@@ -106,3 +106,69 @@ export const getMonthlyPlan = catchAsync(async (req, res) => {
 
   return res.json({ message: "Yıllık plan", stats });
 });
+
+// belirli bir alandaki turları filtrele
+export const getToursWithin = catchAsync(async (req, res) => {
+  const { unit, distance, latlng } = req.params;
+
+  // enlem/boylam değerini dizi formatına çevir
+  const [lat, lng] = latlng.split(",");
+
+  // enlem/boylam verisi sağlanmazsa hata fırlat
+  if (!lat || !lng) throw BadRequest("Lütfen merkez noktasını tanımlayın.");
+
+  // daire yariçapını radyan birimine çevir
+  const radius = unit == "mi" ? distance / 3963.2 : distance / 6379.1;
+
+  // belirlenen dairesi alandaki turları al
+  const tours = await Tour.find({
+    startLocation: {
+      $geoWithin: {
+        $centerSphere: [[lat, lng], radius],
+      },
+    },
+  });
+
+  res.json({
+    message: "Sınırlar içerisindeki turlar algılandı.",
+    results: tours.length,
+    data: tours,
+  });
+});
+
+export const getDistance = catchAsync(async (req, res) => {
+  // urlden parametreleri al
+  const { latlng, unit } = req.params;
+
+  // enlem/boylamı dizi formatına çevir
+  const [lat, lng] = latlng.split(",");
+
+  // turların merkez noktasındaan uzaklıklarını hesapla
+  const tours = await Tour.aggregate([
+    // 1) uzaklığı hesapla
+    {
+      $geoNear: {
+        near: {
+          type: "Point",
+          coordinates: [+lat, +lng],
+        },
+        distanceField: "distance",
+        // todo km veya mile çevir
+      },
+    },
+
+    // 2) istediğimiz alanları seç
+    {
+      $project: {
+        name: 1,
+        distance: 2,
+      },
+    },
+  ]);
+
+  // clienta cevap gönder
+  res.json({
+    message: "Uzaklıklar hesaplandı.",
+    data: tours,
+  });
+});

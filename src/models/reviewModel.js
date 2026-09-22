@@ -74,6 +74,12 @@ reviewSchema.post(/^findOneAnd/, async function (doc) {
   }
 });
 
+// index
+reviewSchema.index({ tour: 1 });
+
+// aynı kullanıcı aynı tura sadece 1 yorum atabilsin indexi
+reviewSchema.index({ tour: 1, user: 1 }, { unique: true });
+
 const Review = mongoose.model("Review", reviewSchema);
 
 export default Review;

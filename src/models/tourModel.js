@@ -92,6 +92,10 @@ tourSchema.pre("find", function () {
   this.find({ premium: { $ne: true } });
 });
 
+//! Index
+// coğrafi sorguyu gerçekleştirmek için eklenmesi gerken zorunlu olan index
+tourSchema.index({ startLocation: "2dsphere" });
+
 // yukardaki şemayı kullanarak mongoose model oluştur
 const Tour = mongoose.model("Tour", tourSchema);
 
