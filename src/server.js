@@ -25,7 +25,7 @@ const app = express();
 // rate limit
 const loginRateLimit = rateLimit({
   windowMs: 5 * 60 * 1000,
-  max: 5,
+  max: 10,
   message:
     "Kısa süre içinde çok fazla deneme yaptınız. Lütfen daha sonra tekrar deneyiniz.",
 });

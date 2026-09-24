@@ -153,6 +153,7 @@ export const getDistance = catchAsync(async (req, res) => {
           coordinates: [+lat, +lng],
         },
         distanceField: "distance",
+        distanceMultiplier: unit === "mi" ? 0.000621371 : 0.001,
         // todo km veya mile çevir
       },
     },
@@ -161,7 +162,7 @@ export const getDistance = catchAsync(async (req, res) => {
     {
       $project: {
         name: 1,
-        distance: 2,
+        distance: 1,
       },
     },
   ]);

@@ -10,13 +10,15 @@ import {
   updateMe,
   updateUser,
 } from "../controllers/userControl.js";
+import multer from "multer";
+import { upload } from "../utils/upload.js";
 
 const router = express.Router();
 
 router
   .route("/me")
   .get(protect, profile)
-  .patch(protect, updateMe)
+  .patch(protect, upload.single("photo"), updateMe)
   .delete(protect, deleteMe);
 
 router.use(protect, authorizeRoles("admin")); //bu satırdan sonraki bütün routelara sadece sadece admin istek atabilir
