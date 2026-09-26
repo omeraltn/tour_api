@@ -1,6 +1,7 @@
 import multer from "multer";
 import crypto from "crypto";
 import { BadRequest } from "./error.js";
+import sharp from "sharp";
 
 // diskStorage kurulum dosyaları sunucuya kaydetmek için
 const diskStorage = multer.diskStorage({
@@ -21,6 +22,9 @@ const diskStorage = multer.diskStorage({
   },
 });
 
+// memoryStorage kurulum
+const memoryStorage = multer.memoryStorage({});
+
 // fotoğraf içeriği dışındaki dosyaları kabul etmeecek middleware
 const multerFilter = (req, file, cb) => {
   if (file.mimetype.startsWith("image")) {
@@ -38,6 +42,31 @@ const multerFilter = (req, file, cb) => {
 
 // multer middleware kurulumu
 export const upload = multer({
-  storage: diskStorage,
+  storage: memoryStorage,
   fileFilter: multerFilter,
 });
+
+/*
+ 
+* kullanıcı 4k çözünürlükte 20-30mb bir fotoğrafı profil fotosu olarak yüklemeye çalışabilir.
+* Proje içerisinde profil fotoğrafları genelde 40 x 40 veya 80x80 boyutlarında kullanılır ama kullanıcı fotorğafı seçerken 2560 x 1440 gibi yüksek kalite fotoğraf seçebilir ve herhangi bir işlemden geçirmeden sunucuya kaydedersek gereksiz alan kaplar.
+* Bu yüzdeb fotoğrafları sunucuya kaydetmeden önce sharp kütüphanesi ile işleceğiz.
+*/
+export const resize = (req, res, next) => {
+  if (!req.file) return next();
+
+  // dosya ismi belirle
+  const filename = `photo-${req.user.id}-${Date.now()}.webp`;
+
+  // dosyayı işle ve diske kaydet
+  sharp(req.file.buffer)
+    .resize(200, 200)
+    .toFormat("webp")
+    .webp({ quality: 90 })
+    .toFile(`uploads/users/${filename}`);
+
+  // yeni yüklenen dosyayı mw'den sonra çalışılacak fonksiyonda erişmek için req'e ekle
+  req.file = `uploads/users/${filename}`;
+
+  next();
+};
